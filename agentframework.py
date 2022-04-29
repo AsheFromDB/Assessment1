@@ -7,15 +7,15 @@ Created on Tue Feb  8 12:56:51 2022
 import random
 
 
-class tracking: #used for showing wolves the nearest sheeps coordinates
+class tracking: #for tracking sheep's coordinate when wolves hunting
     def __init__(self, sheepx, sheepy, distance):
         self.distance = distance #stores distance of sheep from wolf
         self.sx = sheepx #stores x coordinate of said sheep
         self.sy = sheepy #stores said sheeps y coordinate
 
-class Agent:
+class Agent:#class for sheeps
     
-    def __init__(self,ia,environment,agents):#self.x跟x不是一个东西
+    def __init__(self,ia,environment,agents):
         #self.x=x
         self.id=ia
         self.x=random.randint(0,99)
@@ -35,7 +35,7 @@ class Agent:
     def __str__(self):
        return "id="+ str(self.id)+",y="+ str(self.y)+",x=" + str(self.x)
     
-    def move(self):#没有__不是内部函数
+    def move(self):#for sheeps move
         
         
         
@@ -57,12 +57,12 @@ class Agent:
     
    
     
-    def eat(self): # can you make it eat what is left?
+    def eat(self): # make sheep eat grass
         if self.environment[self.y][self.x] > 10:
             self.environment[self.y][self.x] -= 10
             self.store += 10 
             
-    def share_with_neighbours(self, neighbourhood):
+    def share_with_neighbours(self, neighbourhood):# for sheeps sharing information with each other
         for agent in self.agents:
             dist = self.distance_between(agent)
             if dist <= neighbourhood:
@@ -72,58 +72,38 @@ class Agent:
                 agent.store = ave
                 #print("sharing " + str(dist) + " " + str(ave))
 
-    def distance_between(self, agent):
+    def distance_between(self, agent):# calculating the distance between two objects
         return (((self.x - agent.x)**2) + ((self.y - agent.y)**2))**0.5
     
     
-class Wolf: #used to create wolves
+class Wolf: #class for wolves
     def __init__(self, environment, prey):
         self.environment = environment #stores environment data
         self.prey = prey #list fo sheep for interacting (same data as Agent.others)
         self.x = random.randint(0,99) #random x coordinate 
         self.y = random.randint(0,99) #random y coordinate
         
-    def distance_between(self, prey):
+    def distance_between(self, prey):# calculating the distance between wolves and sheeps
         return (((self.x - prey.x)**2) + ((self.y - prey.y)**2))**0.5 
-    
-    def kill(self, agents):
-     global num_of_agents # Allows function to edit the sheep number globally (prevents indices error when a sheep has been killed)
-     for agent in self.prey: #For every sheep
-        if agent.x == self.x and agent.y == self.y: # If this sheep shares a space with the wolf
-            agents.remove(agent) # remove sheep from sheep list
-            num_of_agents -=  1 # reduce sheep count by one
-            print("Sheep Eaten!") # notification of successful kill
-            if num_of_agents == 0:
-                print ("All sheep eaten!!!")
-                
-    def kill(self, agents):
-     global num_of_agents # Allows function to edit the sheep number globally (prevents indices error when a sheep has been killed)
-     for agent in self.prey: #For every sheep
-        if agent.x == self.x and agent.y == self.y: # If this sheep shares a space with the wolf
-            agents.remove(agent) # remove sheep from sheep list
-            num_of_agents -=  1 # reduce sheep count by one
-            print("Sheep Eaten!") # notification of successful kill
-            if num_of_agents == 0:
-                print ("All sheep eaten!!!")     
-                
-    def move(self,MaxBound,wspeed, targets): #function for wolves to hunt down sheep
-     trace = [] # create a list for filling with tracking data
-     closest =MaxBound #sets the base parameter for shortest distance to a sheep to max possible distance
+            
+    def move(self,MaxBound,wspeed, targets): #for wolves hunting down sheep
+     trace = [] # a list for tracking data
+     closest =MaxBound 
      for agent in self.prey: #for every sheep
-         trace.append(tracking(agent.x, agent.y, self.distance_between( agent))) #create an agent storing said sheeps coordinates and distance from wolf
+         trace.append(tracking(agent.x, agent.y, self.distance_between( agent))) #storing the coords and distance from a wolf
      for t in range(targets): #for every sheep
-         if trace[t].distance < closest: #if this sheep is closer than the previous closest sheep
-             closest = trace[t].distance #set this as the shortest distance to a sheep
+         if trace[t].distance < closest: #estimate the distance between this one and wolf and the previous distance
+             closest = trace[t].distance #shortest distance to a sheep
      for t in range(targets): #for every sheep
-         if closest == trace[t].distance: #if this sheep is the closest
-             if self.x + wspeed < trace[t].sx: #if full speed wont allow the wolf x coord to increase enough
-                 self.x += wspeed #increase x coordinate by max wolf movement
+         if closest == trace[t].distance: #if this one is the closest
+             if self.x + wspeed < trace[t].sx: #full speed is not enough for increasement
+                 self.x += wspeed #increase
              else:
-                 if self.x - wspeed > trace[t].sx: #if full speed wont allow the wolf x coord to decrease enough
-                     self.x -= wspeed #decrease x coordinate by wolf full speed
+                 if self.x - wspeed > trace[t].sx: #full speed is not enough for decreasement
+                     self.x -= wspeed #decrease
                  else:
-                     self.x = trace[t].sx #wolf must be within reach of sheep so move into sheep coordinates
-         if closest == trace[t].distance: #repeats move conditions for y coordinates
+                     self.x = trace[t].sx #wolves should be within the range
+         if closest == trace[t].distance: #repeats for y
              if self.y + wspeed < trace[t].sy:
                  self.y += wspeed
              else:
